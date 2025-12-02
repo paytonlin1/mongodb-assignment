@@ -1,0 +1,142 @@
+[
+    {
+        "breed": "Abyssinian",
+        "origin_location": "Ethiopia (historical Abyssinia)",
+        "origin_date": "Ancient",
+        "colors_patterns": ["Ruddy", "Red", "Blue", "Fawn", "Ticked"],
+        "popularity": "common"
+    },
+    {
+        "breed": "American Shorthair",
+        "origin_location": "United States",
+        "origin_date": "1900s",
+        "colors_patterns": ["Tabby", "Calico", "Solid", "Bi-color", "Smoke"],
+        "popularity": "common"
+    },
+    {
+        "breed": "American Curl",
+        "origin_location": "United States",
+        "origin_date": "1980s",
+        "colors_patterns": ["All colors", "All patterns"],
+        "popularity": "uncommon"
+    },
+    {
+        "breed": "Balinese",
+        "origin_location": "United States",
+        "origin_date": "1950s",
+        "colors_patterns": ["Seal point", "Blue point", "Chocolate point", "Lilac point"],
+        "popularity": "uncommon"
+    },
+    {
+        "breed": "Bengal",
+        "origin_location": "United States",
+        "origin_date": "1970s",
+        "colors_patterns": ["Brown spotted", "Snow lynx", "Snow mink", "Marbled"],
+        "popularity": "common"
+    },
+    {
+        "breed": "Birman",
+        "origin_location": "Myanmar (Burma)",
+        "origin_date": "Ancient",
+        "colors_patterns": ["Seal point", "Blue point", "Chocolate point", "Lilac point"],
+        "popularity": "uncommon"
+    },
+    {
+        "breed": "British Shorthair",
+        "origin_location": "United Kingdom",
+        "origin_date": "1800s",
+        "colors_patterns": ["Blue", "Black", "White", "Tabby", "Bi-color"],
+        "popularity": "common"
+    },
+    {
+        "breed": "Burmese",
+        "origin_location": "Myanmar",
+        "origin_date": "1930s",
+        "colors_patterns": ["Sable", "Champagne", "Blue", "Platinum"],
+        "popularity": "uncommon"
+    },
+    {
+        "breed": "Cornish Rex",
+        "origin_location": "United Kingdom",
+        "origin_date": "1950s",
+        "colors_patterns": ["All colors", "All patterns"],
+        "popularity": "uncommon"
+    },
+    {
+        "breed": "Devon Rex",
+        "origin_location": "United Kingdom",
+        "origin_date": "1960s",
+        "colors_patterns": ["All colors", "All patterns"],
+        "popularity": "uncommon"
+    },
+    {
+        "breed": "Egyptian Mau",
+        "origin_location": "Egypt",
+        "origin_date": "Ancient",
+        "colors_patterns": ["Silver", "Bronze", "Smoke"],
+        "popularity": "uncommon"
+    },
+    {
+        "breed": "Himalayan",
+        "origin_location": "United States / United Kingdom",
+        "origin_date": "1930s",
+        "colors_patterns": ["Seal point", "Blue point", "Chocolate point", "Lilac point", "Flame point"],
+        "popularity": "common"
+    },
+    {
+        "breed": "Maine Coon",
+        "origin_location": "United States",
+        "origin_date": "1800s",
+        "colors_patterns": ["Tabby", "Tortoiseshell", "Solid", "Smoke", "Bi-color"],
+        "popularity": "common"
+    },
+    {
+        "breed": "Manx",
+        "origin_location": "Isle of Man",
+        "origin_date": "Ancient",
+        "colors_patterns": ["All colors", "All patterns"],
+        "popularity": "uncommon"
+    },
+    {
+        "breed": "Norwegian Forest Cat",
+        "origin_location": "Norway",
+        "origin_date": "Ancient",
+        "colors_patterns": ["Tabby", "Solid", "Bi-color", "Tortoiseshell"],
+        "popularity": "common"
+    },
+    {
+        "breed": "Oriental Shorthair",
+        "origin_location": "United States",
+        "origin_date": "1950s",
+        "colors_patterns": ["300+ colors", "Solid", "Tabby", "Bi-color", "Smoke"],
+        "popularity": "uncommon"
+    },
+    {
+        "breed": "Persian",
+        "origin_location": "Iran (Persia)",
+        "origin_date": "1600s",
+        "colors_patterns": ["White", "Black", "Blue", "Cream", "Silver", "Smoke"],
+        "popularity": "common"
+    },
+    {
+        "breed": "Ragdoll",
+        "origin_location": "United States",
+        "origin_date": "1960s",
+        "colors_patterns": ["Colorpoint", "Mitted", "Bi-color", "Seal", "Blue", "Chocolate", "Lilac"],
+        "popularity": "common"
+    },
+    {
+        "breed": "Russian Blue",
+        "origin_location": "Russia",
+        "origin_date": "1800s",
+        "colors_patterns": ["Blue (solid)"],
+        "popularity": "common"
+    },
+    {
+        "breed": "Sphynx",
+        "origin_location": "Canada",
+        "origin_date": "1960s",
+        "colors_patterns": ["All colors", "All patterns (skin pigmentation)"],
+        "popularity": "uncommon"
+    }
+]
