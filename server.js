@@ -1,297 +1,371 @@
 // server.js
-// where your node app starts
-//MongoDB Connection
-const { MongoClient, ServerApiVersion } = require('mongodb');
-const uri = "mongodb+srv://pal109:0rangesm0ng0@cluster0.vfvxquk.mongodb.net/?appName=Cluster0";
-const mongoose = require('mongoose');
-
-main().catch(err => console.log(err));
-
-async function main() {
-  await mongoose.connect('mongodb+srv://pal109:0rangesm0ng0@cluster0.vfvxquk.mongodb.net/?appName=Cluster0');
-
-  // use `await mongoose.connect('mongodb://user:password@127.0.0.1:27017/test');` if your database has auth enabled
-}
-
-const client = new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  }
-});
-async function run() {
-  try {
-    // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
-    // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
-  } finally {
-    // Ensures that the client will close when you finish/error
-    await client.close();
-  }
-}
-run().catch(console.dir);
-
-// init project
 const express = require('express');
+const mongoose = require('mongoose');
+require('dotenv').config();
+
+// MongoDB Connection
+const uri = process.env.MONGODB_URI;
+
+// Connect to MongoDB
+mongoose.connect(uri)
+  .then(() => console.log('Successfully connected to MongoDB!'))
+  .catch(err => console.error('MongoDB connection error:', err));
+
+// Define Schemas
+const catBreedSchema = new mongoose.Schema({
+  breed: { type: String, required: true, unique: true },
+  origin_location: { type: String, required: true },
+  origin_date: { type: String, required: true },
+  colors_patterns: [String],
+  popularity: { type: String, required: true }
+});
+
+const catNameSchema = new mongoose.Schema({
+  letter: { type: String, required: true },
+  names: [String]
+});
+
+// Create Models
+const CatBreed = mongoose.model('CatBreed', catBreedSchema);
+const CatName = mongoose.model('CatName', catNameSchema);
+
+// Initialize Express
 const app = express();
-app.use(express.json()); // this allow express to read JSON from the body of the HTML request
+app.use(express.json());
 
-
-//load my .json file of catbreeds and catnames
-const catbreedsJSON = require('./catbreeds.json')
-const catnamesJSON = require('./catnames.json');
-
-const catbreedsSchema = new mongoose.Schema({
-  name: String,
-  origin_location: String,
-  origin_date: String,
-  colors_patterns: String,
-  popularity: Number
-})
-
-const catbreed = mongoose.model('CatBreed', catbreedsSchema)
-//define your routes here. don't forget about error handling
-//GET REQUESTS
+// Routes
 app.get('/', function (request, response) {
   response.json({
     message: "Please see the README.md for documentation",
-  })
-});
-
-//GET all resources
-app.get('/all', function (request, response) {
-  response.json({
-    catbreeds: catbreeds,
-    catnames: catnames
   });
 });
 
-//GET all cat breeds
+// GET all resources
+app.get('/all', async function (request, response) {
+  try {
+    const breeds = await CatBreed.find({});
+    const names = await CatName.find({});
+    
+    // Transform names into letter-keyed object
+    const namesObj = {};
+    names.forEach(doc => {
+      namesObj[doc.letter] = doc.names;
+    });
+    
+    response.json({
+      catbreeds: breeds,
+      catnames: namesObj
+    });
+  } catch (error) {
+    response.status(500).json({ error: 'Database error' });
+  }
+});
+
+// GET all cat breeds
 app.get('/catbreeds', async function (request, response) {
   try {
-    const breed = request.params.breed;
-    const search = await.catbreed.find({});
+    const breeds = await CatBreed.find({});
     response.json(breeds);
-  } catch(error) {
-    response.status(500).json({ error: 'Database error' })
+  } catch (error) {
+    response.status(500).json({ error: 'Database error' });
   }
-
 });
 
-//GET cat breeds by name
-app.get('/catbreeds/:breed', function (request, response) {
-  const breed = request.params.breed.toLowerCase();
-  const search = catbreeds.find(b => b.breed.toLowerCase() === breed)
-  if (!search) {
-    return response.status(404).json({ error: `Breed not found` });
+// GET cat breed by name
+app.get('/catbreeds/:breed', async function (request, response) {
+  try {
+    const breed = request.params.breed;
+    const search = await CatBreed.findOne({ 
+      breed: new RegExp(`^${breed}$`, 'i') 
+    });
+    
+    if (!search) {
+      return response.status(404).json({ error: `Breed not found` });
+    }
+    
+    response.json(search);
+  } catch (error) {
+    response.status(500).json({ error: 'Database error' });
   }
-
-  response.json(search)
 });
 
-//GET path for colors and patterns
-app.get('/catbreeds/:breed/colors_patterns', function (request, response) {
-  const breed = request.params.breed.toLowerCase();
-
-  const search = catbreeds.find(b => b.breed.toLowerCase() === breed)
-  if (!search) {
-    return response.status(404).json({ error: `Breed not found` });
+// GET colors and patterns for a breed
+app.get('/catbreeds/:breed/colors_patterns', async function (request, response) {
+  try {
+    const breed = request.params.breed;
+    const search = await CatBreed.findOne({ 
+      breed: new RegExp(`^${breed}$`, 'i') 
+    });
+    
+    if (!search) {
+      return response.status(404).json({ error: `Breed not found` });
+    }
+    
+    response.json(search.colors_patterns);
+  } catch (error) {
+    response.status(500).json({ error: 'Database error' });
   }
-
-  response.json(search.colors_patterns)
 });
 
-//GET all names
-app.get('/catnames', function (request, response) {
-  response.json(catnames)
+// GET all names
+app.get('/catnames', async function (request, response) {
+  try {
+    const names = await CatName.find({});
+    const namesObj = {};
+    names.forEach(doc => {
+      namesObj[doc.letter] = doc.names;
+    });
+    response.json(namesObj);
+  } catch (error) {
+    response.status(500).json({ error: 'Database error' });
+  }
 });
 
-//GET path for specific letters
-app.get('/catnames/:letter', function (request, response) {
-  const letter = request.params.letter.toUpperCase();
-
-  const names = catnames[letter];
-  if (!names) {
-    return response.status(404).json({ error: `No names found` })
+// GET names by letter
+app.get('/catnames/:letter', async function (request, response) {
+  try {
+    const letter = request.params.letter.toUpperCase();
+    const doc = await CatName.findOne({ letter });
+    
+    if (!doc) {
+      return response.status(404).json({ error: `No names found` });
+    }
+    
+    response.json(doc.names);
+  } catch (error) {
+    response.status(500).json({ error: 'Database error' });
   }
-
-  response.json(names);
 });
 
-//POST new cat breed
-app.post('/catbreeds', function (request, response) {
-  const { breed, origin_location, origin_date, colors_patterns, popularity } = request.body;
-
-  //validate input
-  if (!breed || !origin_location || !origin_date || !colors_patterns || !popularity) {
-    return response.status(400).json({ error: `Please provide 'breed', 'origin_location', 'origin_date', 'colors_patterns', and 'popularity'.` });
+// POST new cat breed
+app.post('/catbreeds', async function (request, response) {
+  try {
+    const { breed, origin_location, origin_date, colors_patterns, popularity } = request.body;
+    
+    // Validate input
+    if (!breed || !origin_location || !origin_date || !colors_patterns || !popularity) {
+      return response.status(400).json({ 
+        error: `Please provide 'breed', 'origin_location', 'origin_date', 'colors_patterns', and 'popularity'.` 
+      });
+    }
+    
+    // Check if breed already exists
+    const existing = await CatBreed.findOne({ 
+      breed: new RegExp(`^${breed}$`, 'i') 
+    });
+    
+    if (existing) {
+      return response.status(409).json({ 
+        error: `The breed ${breed} already exists in the list.` 
+      });
+    }
+    
+    // Create new breed
+    const newBreed = new CatBreed({
+      breed,
+      origin_location,
+      origin_date,
+      colors_patterns,
+      popularity
+    });
+    
+    await newBreed.save();
+    
+    response.status(201).json({
+      message: `The breed ${breed} was added successfully.`,
+      entry: newBreed
+    });
+  } catch (error) {
+    response.status(500).json({ error: 'Database error' });
   }
-
-  //check if breed already exists
-  const check = catbreeds.some(b => b.breed.toLowerCase() === breed.toLowerCase());
-  if (check) {
-    return res.status(409).json({ error: `The breed ${breed} already exists in the list.` });
-  }
-
-  //add new word (in-memory)
-  const newBreed = {
-    breed,
-    origin_location,
-    origin_date,
-    colors_patterns,
-    popularity
-  };
-
-  catbreeds.push(newBreed)
-
-  response.status(201).json({
-    message: `The breed ${breed} was added successfully.`,
-    entry: newBreed
-  });
 });
 
-//POST new cat name
-app.post('/catnames', function (request, response) {
-  const { name } = request.body;
-
-  //validate input
-  if (!name || typeof name !== 'string') {
-    return response.status(400).json({ error: `Name is not valid.` })
+// POST new cat name
+app.post('/catnames', async function (request, response) {
+  try {
+    const { name } = request.body;
+    
+    // Validate input
+    if (!name || typeof name !== 'string') {
+      return response.status(400).json({ error: `Name is not valid.` });
+    }
+    
+    const letter = name[0].toUpperCase();
+    
+    // Find or create letter document
+    let doc = await CatName.findOne({ letter });
+    
+    if (!doc) {
+      doc = new CatName({ letter, names: [] });
+    }
+    
+    // Check if name exists
+    if (doc.names.includes(name)) {
+      return response.status(400).json({ error: `Name already exists.` });
+    }
+    
+    // Add name
+    doc.names.push(name);
+    await doc.save();
+    
+    response.status(201).json({
+      message: `The name ${name} was added successfully`,
+      entry: name
+    });
+  } catch (error) {
+    response.status(500).json({ error: 'Database error' });
   }
-
-  //determine first letter
-  const letter = name[0].toUpperCase();
-
-  //create new array if letter does not exist
-  if (!catnames[letter]) {
-    catnames[letter] = [];
-  }
-
-  //check if name exists 
-  if (catnames[letter].includes(name)) {
-    return response.status(400).json({ error: `Name already exists.` })
-  }
-
-  //add name (in-memory)
-  catnames[letter].push(name);
-
-  response.status(201).json({
-    message: `The name ${name} was added successfully`,
-    entry: name
-  });
 });
 
-//PUT update an existing breed
-app.put('/catbreeds/:breed', function (request, response) {
-  const search = request.params.breed.toLowerCase();
-  const { origin_date, origin_location, colors_patterns, popularity } = request.body;
-
-  //find breed
-  const index = catbreeds.findIndex(b => b.breed.toLowerCase() === search)
-  if (index === -1) {
-    return response.status(404).json({ error: `Breed ${request.params.breed} not found.` })
+// PUT update an existing breed
+app.put('/catbreeds/:breed', async function (request, response) {
+  try {
+    const breedName = request.params.breed;
+    const { origin_date, origin_location, colors_patterns, popularity } = request.body;
+    
+    // Find breed
+    const breed = await CatBreed.findOne({ 
+      breed: new RegExp(`^${breedName}$`, 'i') 
+    });
+    
+    if (!breed) {
+      return response.status(404).json({ 
+        error: `Breed ${breedName} not found.` 
+      });
+    }
+    
+    // Update fields
+    if (origin_date) breed.origin_date = origin_date;
+    if (origin_location) breed.origin_location = origin_location;
+    if (colors_patterns) breed.colors_patterns = colors_patterns;
+    if (popularity) breed.popularity = popularity;
+    
+    await breed.save();
+    
+    response.json({
+      message: `Breed ${breed.breed} updated successfully.`,
+      entry: breed
+    });
+  } catch (error) {
+    response.status(500).json({ error: 'Database error' });
   }
-
-  //check inputs
-  if (origin_date) catbreeds[index].origin_date = origin_date;
-  if (origin_location) catbreeds[index].origin_location = origin_location;
-  if (colors_patterns) catbreeds[index].colors_patterns = colors_patterns;
-  if (popularity) catbreeds[index].popularity = popularity;
-
-  response.json({
-    message: `Breed ${catbreeds[index].breed} updated successfully.`,
-    entry: catbreeds[index]
-  });
 });
 
-//PUT update an existing name
-app.put('/catnames/:letter/:oldName', function (request, response) {
-  const letter = request.params.letter.toUpperCase();
-  const oldName = request.params.oldName;
-  const { newName } = request.body;
-
-  //validate input
-  if (!newName || typeof newName !== 'string') {
-    return response.status(404).json({ error: `Name not valid` });
+// PUT update an existing name
+app.put('/catnames/:letter/:oldName', async function (request, response) {
+  try {
+    const letter = request.params.letter.toUpperCase();
+    const oldName = request.params.oldName;
+    const { newName } = request.body;
+    
+    // Validate input
+    if (!newName || typeof newName !== 'string') {
+      return response.status(404).json({ error: `Name not valid` });
+    }
+    
+    // Find letter document
+    const doc = await CatName.findOne({ letter });
+    
+    if (!doc) {
+      return response.status(404).json({ 
+        error: `No names found under letter ${letter}.` 
+      });
+    }
+    
+    // Find old name index
+    const index = doc.names.indexOf(oldName);
+    if (index === -1) {
+      return response.status(404).json({ 
+        error: `Name ${oldName} not found under ${letter}.` 
+      });
+    }
+    
+    // Check for duplicate
+    if (doc.names.includes(newName)) {
+      return response.status(409).json({ 
+        error: `The name ${newName} already exists under ${letter}.` 
+      });
+    }
+    
+    // Update name
+    doc.names[index] = newName;
+    await doc.save();
+    
+    response.json({
+      message: `The name ${oldName} was updated successfully to ${newName}.`,
+      entry: doc.names
+    });
+  } catch (error) {
+    response.status(500).json({ error: 'Database error' });
   }
-
-  //check letter
-  if (!catnames[letter]) {
-    return response.status(404).json({ error: `No names found under letter ${letter}.` });
-  }
-
-  //index oldName
-  const index = catnames[letter].indexOf(oldName);
-  if (index === -1) {
-    return response.status(404).json({ error: `Name ${oldName} not found under ${letter}.` });
-  }
-
-  //check name is not duplicate
-  if (catnames[letter].includes(newName)) {
-    return response.status(409).json({ error: `The name ${newName} already exists under ${letter}.` });
-  }
-
-  catnames[letter][index] = newName;
-  response.json({
-    message: `The name ${oldName} was updated successfully to ${newName}.`,
-    entry: catnames[letter]
-  });
 });
 
 // DELETE a breed
-app.delete('/catbreeds/:breed', function (request, response) {
-  const breed = request.params.breed.toLowerCase();
-
-  //index breed
-  const index = catbreeds.findIndex(b => b.breed.toLowerCase() === breed);
-
-  if (index === -1) {
-    return response.status(404).json({ error: `Breed '${request.params.breed}' not found.` });
+app.delete('/catbreeds/:breed', async function (request, response) {
+  try {
+    const breedName = request.params.breed;
+    
+    const deletedBreed = await CatBreed.findOneAndDelete({ 
+      breed: new RegExp(`^${breedName}$`, 'i') 
+    });
+    
+    if (!deletedBreed) {
+      return response.status(404).json({ 
+        error: `Breed '${breedName}' not found.` 
+      });
+    }
+    
+    response.json({
+      message: `Breed '${deletedBreed.breed}' deleted successfully.`,
+      entry: deletedBreed
+    });
+  } catch (error) {
+    response.status(500).json({ error: 'Database error' });
   }
-
-  //remove from array
-  const deletedBreed = catbreeds.splice(index, 1)[0];
-
-  response.json({
-    message: `Breed '${deletedBreed.breed}' deleted successfully.`,
-    entry: deletedBreed
-  });
 });
 
-//DELETE a name
-app.delete('/catnames/:letter/:name', function (request, response) {
-  const letter = request.params.letter.toUpperCase();
-  const name = request.params.name;
-
-  //check letter
-  if (!catnames[letter]) {
-    return response.status(404).json({ error: `No names found under letter ${letter}.` });
+// DELETE a name
+app.delete('/catnames/:letter/:name', async function (request, response) {
+  try {
+    const letter = request.params.letter.toUpperCase();
+    const name = request.params.name;
+    
+    // Find letter document
+    const doc = await CatName.findOne({ letter });
+    
+    if (!doc) {
+      return response.status(404).json({ 
+        error: `No names found under letter ${letter}.` 
+      });
+    }
+    
+    // Find name index
+    const index = doc.names.indexOf(name);
+    if (index === -1) {
+      return response.status(404).json({ 
+        error: `Name ${name} not found under ${letter}.` 
+      });
+    }
+    
+    // Remove name
+    const deletedName = doc.names.splice(index, 1)[0];
+    
+    // Delete document if no names left
+    if (doc.names.length === 0) {
+      await CatName.deleteOne({ letter });
+    } else {
+      await doc.save();
+    }
+    
+    response.json({
+      message: `Name ${deletedName} was successfully deleted from ${letter}.`,
+      entry: deletedName
+    });
+  } catch (error) {
+    response.status(500).json({ error: 'Database error' });
   }
-
-  //index name
-  const index = catnames[letter].indexOf(name);
-  if (index === -1) {
-    return response.status(404).json({ error: `Name ${name} not found under ${letter}.` });
-  }
-
-  //delete name
-  const deletedName = catnames[letter].splice(index, 1)[0];
-
-  //delete letter if array is empty
-  if (catnames[letter].length == 0) {
-    delete catnames[letter];
-  }
-
-  response.json({
-    message: `Name ${deletedName} was successfully deleted from ${letter}.`,
-    entry: deletedName
-  })
 });
 
-// listen for requests :)
 const listener = app.listen(3000, function () {
   console.log('Your app is listening on port ' + listener.address().port);
 });

@@ -1,7 +1,7 @@
 Express.js CATalogAPI
 =================
 This API has works as a catalog of cat breeds and cat names.
-All data must be sent as a Raw JSON Body.
+MongoDB Server: https://cloud.mongodb.com/v2/692ee876a7488b7751e4eb46#/metrics/replicaSet/692ee941b56cc97e82d032e1/explorer/catDatabase
 
 * GET all - retrieves all information
 
